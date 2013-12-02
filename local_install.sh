@@ -1,5 +1,5 @@
 #!/bin/bash
-ROOT_DIR=$PWD
+
 
 
 #This shell script will be used to automate a new environment 
@@ -26,10 +26,8 @@ ROOT_DIR=$PWD
 
 function beginning{
 echo "This script will be used to create a new canvas-lms instance"
-echo "Make sure that you are running this in either your home directory ~/"
-
 cd ~
-
+ROOT_DIR=$PWD
 
 }
 
@@ -39,6 +37,7 @@ echo "Downloading command line tools"
 #TODO
 # Find a way to run this command xcode-select --install
 #
+`xcode-select --install`
 
 }
 
@@ -50,6 +49,8 @@ function install_brew{
 #
 # If this error occurs /usr/local/etc isn't writable or Cannot write to /usr/local/Cellar
 # Then do this sudo chown -R `whoami` /usr/local
+ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
+
 }
 
 function postgresql_install{
@@ -95,7 +96,9 @@ echo "Now installing bundler gem"
 
 }
 
+beginning
 
+command_line_tools
 
-
+install_brew
 
