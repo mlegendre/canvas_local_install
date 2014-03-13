@@ -33,7 +33,7 @@ ROOT_DIR=$PWD
 
 
 function command_line_tools(){
-echo For now you have to manually install command line tools by doing the following
+echo "Now Downloading wget and installing xtools, please follow all prompts (You will need to enter your password)"
 #TODO
 # Need to refactor this, could probably stick the following into a method of its own
 # hdiutil attach <dmg>
@@ -78,8 +78,52 @@ function install_brew(){
 #
 # If this error occurs /usr/local/etc isn't writable or Cannot write to /usr/local/Cellar
 # Then do this sudo chown -R `whoami` /usr/local
+echo "I am now going to install homebrew please follow the prompts"
+
 ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
 
+brew doctor
+}
+
+function github_install(){
+SSH_DIRECTORY="~/.ssh"
+
+echo "Installing github on your machine"
+
+
+brew install github
+
+if [ !-d $SSH_DIRECTORY ];
+  then
+    echo "I see you do not have ssh keys on your system, wait while I generate those for you\n
+         Just press enter when it asks where you want the key to reside and passphrase (makes it easier to find later)"
+
+    ssh-keygen
+fi
+
+  echo "Copying your public ssh key to your clipboard"
+  pbcopy < ~/.ssh/id_rsa.pub
+
+  echo "1. If you have not already signup for a new account\n2. Sign into github\n3. Go to Account Settings\n
+        4. Click ssh keys in left sidebar\n5. Click Add SSH Keys\n6. Paste your key into the key field\n
+        7. Click Add Key\n8. Confirm by entering github password"
+
+  open 'http://github.com'
+
+  waiting_for_user
+}
+
+function waiting_for_user(){
+  echo "Would you like more time?"
+  read answer
+
+  while [ $answer == "y" ];
+  do
+   echo "I will give you some more time"
+   sleep 3m
+   echo "do you still need more time?"
+   read answer
+  done
 }
 
 function postgresql_install(){
@@ -92,10 +136,8 @@ echo "I am now going to install rbenv"
 #TODO
 # brew install rbenv ruby-build xmlsec1 postgresql
 # rbenv install 1.9.3-p448
-echo "Now modifying bash profile to set up rbenv"
-#    touch ~/.bash_profile
-#    echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
-#    source ~/.bash_profile
+
+#
 #    cd canvas-lms
 #    rbenv local 1.9.3-p448
 #    mkdir ~/gems
@@ -103,15 +145,17 @@ echo "Now modifying bash profile to set up rbenv"
 #    touch ~/.bash_profile
 #    echo "export GEM_HOME=~/gems" >> ~/.bash_profile
 #    source ~/.bash_profile
+echo "I am now installing rbenv"
 
-}
+brew install rbenv
 
-function github_install(){
-echo "Installing github on your machine"
-#TODO
-# Create ssh keys if not already generated
-# brew install github
+echo "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
 
+echo "Now modifying bash profile to set up rbenv"
+
+touch ~/.bash_profile
+echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
+source ~/.bash_profile
 
 }
 
@@ -129,4 +173,7 @@ beginning
 
 command_line_tools
 
+install_brew
+
+github_install
 
