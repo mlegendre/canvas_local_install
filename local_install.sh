@@ -35,81 +35,106 @@
 #done
 
 function beginning(){
-echo "This script will be used to create a new local canvas-lms instance"
-cd ~
-ROOT_DIR=$PWD
+  echo "This script will be used to create a new local canvas-lms instance"
+  cd ~
+  ROOT_DIR=$PWD
 
 }
 
 
 function command_line_tools(){
-echo "Now Downloading wget and installing xtools, please follow all prompts (You will need to enter your password)"
-#TODO
-# Need to refactor this, could probably stick the following into a method of its own
-# hdiutil attach <dmg>
-# sudo installer -verbose -pkg
-# hdiutil detach <dmg>
-# rm <dmg>
+  echo "Now Downloading wget and installing xtools, please follow all prompts (You will need to enter your password)"
+  #TODO
+  # Need to refactor this, could probably stick the following into a method of its own
+  # hdiutil attach <dmg>
+  # sudo installer -verbose -pkg
+  # hdiutil detach <dmg>
+  # rm <dmg>
 
-NAME_OF_TOOLS="commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
-DROPBOX_URL="https://www.dropbox.com/s/gqfz32662ol6bpe/commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
-ESCAPED_TOOL_NAME="Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).dmg"
-#Install wget
+  NAME_OF_TOOLS="commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
+  DROPBOX_URL="https://www.dropbox.com/s/gqfz32662ol6bpe/commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
+  ESCAPED_TOOL_NAME="Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).dmg"
+  #Install wget
 
-curl -O https://rudix.googlecode.com/files/wget-1.12-0.dmg
+  curl -O https://rudix.googlecode.com/files/wget-1.12-0.dmg
 
-hdiutil attach wget-1.12-0.dmg
+  hdiutil attach wget-1.12-0.dmg
 
-sudo installer -verbose -pkg /Volumes/wget.pkg/wget.pkg -target /
+  sudo installer -verbose -pkg /Volumes/wget.pkg/wget.pkg -target /
 
-hdiutil detach wget-1.12-0.dmg
+  hdiutil detach wget-1.12-0.dmg
 
-rm wget-1.12-0.dmg
+  rm wget-1.12-0.dmg
 
-#Use wget to grab commandline tools
+  #Use wget to grab commandline tools
 
-wget -O  $NAME_OF_TOOLS $DROPBOX_URL
+  wget -O  $NAME_OF_TOOLS $DROPBOX_URL
 
-hdiutil attach $ESCAPED_TOOL_NAME
+  hdiutil attach $ESCAPED_TOOL_NAME
 
-sudo installer -verbose -pkg /Volumes/Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).pkg -target /
+  sudo installer -verbose -pkg /Volumes/Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).pkg -target /
 
-hdiutil detach $ESCAPED_TOOL_NAME
+  hdiutil detach $ESCAPED_TOOL_NAME
 
-rm $ESCAPED_TOOL_NAME
+  rm $ESCAPED_TOOL_NAME
 
 }
 
 function install_brew(){
-# TODO
-# Need lots of error checking
-# If this error comes up Error: No such file or directory - /usr/local/Cellar
-# Then run this command sudo mkdir /usr/local/Cellar
-#
-# If this error occurs /usr/local/etc isn't writable or Cannot write to /usr/local/Cellar
-# Then do this sudo chown -R `whoami` /usr/local
-echo "I am now going to install homebrew please follow the prompts"
+  # TODO
+  # Need lots of error checking
+  # If this error comes up Error: No such file or directory - /usr/local/Cellar
+  # Then run this command sudo mkdir /usr/local/Cellar
+  # If this error occurs /usr/local/etc isn't writable or Cannot write to /usr/local/Cellar
+  # Then do this sudo chown -R `whoami` /usr/local
+  echo "I am now going to install homebrew please follow the prompts"
 
-ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
+  ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
 
-brew doctor
+  brew doctor
+}
+
+function rbenv_install(){
+  echo "I am now going to install rbenv"
+  #TODO
+  # brew install rbenv ruby-build xmlsec1 postgresql
+  # rbenv install 1.9.3-p448
+
+  # Set environment variable GEM_HOME to ~/gems
+  #    touch ~/.bash_profile
+  #    echo "export GEM_HOME=~/gems" >> ~/.bash_profile
+  #    source ~/.bash_profile
+  echo "I am now installing rbenv xmlsec1 and postgres"
+
+  brew install rbenv ruby-build xmlsec1 postgresql
+
+  echo "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
+
+  rbenv install 1.9.3-p448
+
+  echo "Now modifying bash profile to set up rbenv"
+
+  touch ~/.bash_profile
+
+  echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
+
+  source ~/.bash_profile
 }
 
 function github_install(){
-SSH_DIRECTORY="~/.ssh"
+  SSH_DIRECTORY="~/.ssh"
 
-echo "Installing github on your machine"
+  echo "Installing github on your machine"
 
+  brew install github
 
-brew install github
-
-if [ !-d $SSH_DIRECTORY ];
-  then
-    echo $'I see you do not have ssh keys on your system, wait while I generate those for you\n
+  if [ !-d $SSH_DIRECTORY ];
+    then
+      echo $'I see you do not have ssh keys on your system, wait while I generate those for you\n
          Just press enter when it asks where you want the key to reside and passphrase (makes it easier to find later)'
 
-    ssh-keygen
-fi
+      ssh-keygen
+  fi
 
   echo "Copying your public ssh key to your clipboard"
   pbcopy < ~/.ssh/id_rsa.pub
@@ -121,8 +146,6 @@ fi
   open 'http://github.com'
 
   waiting_for_user
-
-
 }
 
 
@@ -170,101 +193,84 @@ function waiting_for_user(){
 }
 
 function postgresql_install(){
-echo "I am now going to download the newest postgressql on your system"
+  echo "I am now going to download the newest postgressql on your system"
 
-brew install postgresql
+  brew install postgresql
 
+  mkdir -p ~/Library/LaunchAgents
 
+  ln -sfv /usr/local/opt/postgresql/*.plist ~/Library/LaunchAgents
 
-}
-
-function rbenv_install(){
-echo "I am now going to install rbenv"
-#TODO
-# brew install rbenv ruby-build xmlsec1 postgresql
-# rbenv install 1.9.3-p448
-
-#
-
-# Set environment variable GEM_HOME to ~/gems
-#    touch ~/.bash_profile
-#    echo "export GEM_HOME=~/gems" >> ~/.bash_profile
-#    source ~/.bash_profile
-echo "I am now installing rbenv xmlsec1 and postgres"
-
-brew install rbenv ruby-build xmlsec1 postgresql
-
-echo "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
-
-rbenv install 1.9.3-p448
-
-echo "Now modifying bash profile to set up rbenv"
-
-touch ~/.bash_profile
-
-echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
-
-source ~/.bash_profile
-
-
-
+  launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
 }
 
 function canvas-lms_download(){
-echo "Downloading canvas-lms"
+  echo "Downloading canvas-lms"
 
-name=$(git config --global instructure.name)
-user=$(git config --global instructure.user)
-gerrit_host=$(git config --global instructure.gerrithost)
-gerrit_port=$(git config --global instructure.gerritport)
-project=canvas-lms
-target_dir=~/Desktop/code/canvas-lms
+  name=$(git config --global instructure.name)
+  user=$(git config --global instructure.user)
+  gerrit_host=$(git config --global instructure.gerrithost)
+  gerrit_port=$(git config --global instructure.gerritport)
+  project=canvas-lms
+  target_dir=~/Desktop/code/canvas-lms
 
-if [ "$name" == "" ] || [ "$user" == "" ]; then
-  while true; do
-    read -p "please enter your name: " name
-    read -p "please enter your instructure ldap username: " user
-    read -p "is \"$name ($user@instructure.com)\" right? [y/N] " yn
-    case $yn in
-      [Yy]* ) break;;
-    esac
-  done
-  git config --global instructure.name "$name"
-  git config --global instructure.user "$user"
-fi
+  if [ "$name" == "" ] || [ "$user" == "" ]; then
+    while true; do
+      read -p "please enter your name: " name
+      read -p "please enter your instructure ldap username: " user
+      read -p "is \"$name ($user@instructure.com)\" right? [y/N] " yn
+      case $yn in
+        [Yy]* ) break;;
+      esac
+    done
+    git config --global instructure.name "$name"
+    git config --global instructure.user "$user"
+  fi
 
-if [ "$gerrit_host" == "" ] || [ "$gerrit_port" == "" ]; then
-  gerrit_host=gerrit.instructure.com
-  gerrit_port=29418
-  git config --global instructure.gerrithost $gerrit_host
-  git config --global instructure.gerritport $gerrit_port
-fi
+  if [ "$gerrit_host" == "" ] || [ "$gerrit_port" == "" ]; then
+    gerrit_host=gerrit.instructure.com
+    gerrit_port=29418
+    git config --global instructure.gerrithost $gerrit_host
+    git config --global instructure.gerritport $gerrit_port
+  fi
 
-git clone ssh://$user@$gerrit_host:$gerrit_port/$project $target_dir
+  git clone ssh://$user@$gerrit_host:$gerrit_port/$project $target_dir
 
-cd ~/Desktop/code/canvas-lms
+  cd ~/Desktop/code/canvas-lms
 
-rbenv local 1.9.3-p448
+  rbenv local 1.9.3-p448
+
+  gem install bundler -v 1.5.2
+
+  bundle install --without mysql
+
+  brew install nodejs
+
+  npm install
+
+  for config in delayed_jobs domain file_store outgoing_mail security; \
+          do cp config/$config.yml.example config/$config.yml; done
+
 }
 
 function install_bundler(){
-echo "Now installing bundler gem"
-cd ~/Desktop/code/canvas-lms
-gem install bundler
+  echo "Now installing bundler gem"
+  cd ~/Desktop/code/canvas-lms
+  gem install bundler
 }
 
 function download_cleanBranch_script(){
-CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
+  CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
 
-echo "Downloading cleanbranch script"
+  echo "Downloading cleanbranch script"
 
-cd $CANVAS_ROOT_DIR
+  cd $CANVAS_ROOT_DIR
 
-wget https://raw.github.com/mlegendre/personalprojects/master/cleanBranch.sh --no-check-certificate
+  wget https://raw.github.com/mlegendre/personalprojects/master/cleanBranch.sh --no-check-certificate
 
-echo "Spinning up your server now using cleanBranch.sh, make sure to run that script to checkout patchsets"
+  echo "Spinning up your server now using cleanBranch.sh, make sure to run that script to checkout patchsets"
 
-source $CANVAS_ROOT_DIR/cleanBranch.sh
+  source $CANVAS_ROOT_DIR/cleanBranch.sh
 }
 
 beginning
@@ -274,4 +280,14 @@ command_line_tools
 install_brew
 
 github_install
+
+setting_up_gerrit_hooks
+
+postgresql_install
+
+install_bundler
+
+canvas-lms_download
+
+download_cleanBranch_script
 
