@@ -1,7 +1,4 @@
 #!/bin/bash
-
-
-
 #This shell script will be used to automate a new environment 
 #
 #TODO list 
@@ -11,7 +8,6 @@
 #  2. Download the following
 #    a. postgresql
 #      I. need to setup the correct environment variables
-#      II. Need to set up initial user
 #    b. rbenv
 #      I. need to setup the correct environment variables
 #  3. Download the canvas-lms project onto the Desktop or the home directory
@@ -70,11 +66,11 @@ function command_line_tools(){
 
   wget -O  $NAME_OF_TOOLS $DROPBOX_URL
 
-  hdiutil attach $ESCAPED_TOOL_NAME
+  hdiutil attach $NAME_OF_TOOLS
 
   sudo installer -verbose -pkg /Volumes/Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).pkg -target /
 
-  hdiutil detach $ESCAPED_TOOL_NAME
+  hdiutil detach $NAME_OF_TOOLS
 
   rm $ESCAPED_TOOL_NAME
 
@@ -139,9 +135,7 @@ function github_install(){
   echo "Copying your public ssh key to your clipboard"
   pbcopy < ~/.ssh/id_rsa.pub
 
-  echo $'1. If you have not already signup for a new account\n2. Sign into github\n3. Go to Account Settings\n
-        4. Click ssh keys in left sidebar\n5. Click Add SSH Keys\n6. Paste your key into the key field\n
-        7. Click Add Key\n8. Confirm by entering github password'
+  echo $'1. If you have not already signup for a new account\n2. Sign into github\n3. Go to Account Settings\n4. Click ssh keys in left sidebar\n5. Click Add SSH Keys\n6. Paste your key into the key field\n7. Click Add Key\n8. Confirm by entering github password'
 
   open 'http://github.com'
 
