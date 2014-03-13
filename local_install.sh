@@ -24,7 +24,7 @@
 #    c. RAILS_ENV=development bundle exec rake db:load_initial_data
 #  7. run the shell script I have created??
 
-function beginning{
+function beginning(){
 echo "This script will be used to create a new canvas-lms instance"
 cd ~
 ROOT_DIR=$PWD
@@ -32,18 +32,47 @@ ROOT_DIR=$PWD
 }
 
 
-function command_line_tools{
-echo "Downloading command line tools"
+function command_line_tools(){
+echo For now you have to manually install command line tools by doing the following
 #TODO
-# Find a way to run this command xcode-select --install
-#
-`xcode-select --install`
+# Need to refactor this, could probably stick the following into a method of its own
+# hdiutil attach <dmg>
+# sudo installer -verbose -pkg
+# hdiutil detach <dmg>
+# rm <dmg>
+
+NAME_OF_TOOLS="commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
+DROPBOX_URL="https://www.dropbox.com/s/gqfz32662ol6bpe/commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
+ESCAPED_TOOL_NAME="Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).dmg"
+#Install wget
+
+curl -O https://rudix.googlecode.com/files/wget-1.12-0.dmg
+
+hdiutil attach wget-1.12-0.dmg
+
+sudo installer -verbose -pkg /Volumes/wget.pkg/wget.pkg -target /
+
+hdiutil detach wget-1.12-0.dmg
+
+rm wget-1.12-0.dmg
+
+#Use wget to grab commandline tools
+
+wget -O  $NAME_OF_TOOLS $DROPBOX_URL
+
+hdiutil attach $ESCAPED_TOOL_NAME
+
+sudo installer -verbose -pkg /Volumes/Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).pkg -target /
+
+hdiutil detach $ESCAPED_TOOL_NAME
+
+rm $ESCAPED_TOOL_NAME
 
 }
 
-function install_brew{
-#TODO
-# ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
+function install_brew(){
+# TODO
+# Need lots of error checking
 # If this error comes up Error: No such file or directory - /usr/local/Cellar
 # Then run this command sudo mkdir /usr/local/Cellar
 #
@@ -53,12 +82,12 @@ ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
 
 }
 
-function postgresql_install{
+function postgresql_install(){
 echo "I am now going to download the newest postgressql on your system"
 
 }
 
-function rbenv_install{
+function rbenv_install(){
 echo "I am now going to install rbenv"
 #TODO
 # brew install rbenv ruby-build xmlsec1 postgresql
@@ -77,7 +106,7 @@ echo "Now modifying bash profile to set up rbenv"
 
 }
 
-function github_install{
+function github_install(){
 echo "Installing github on your machine"
 #TODO
 # Create ssh keys if not already generated
@@ -86,12 +115,12 @@ echo "Installing github on your machine"
 
 }
 
-function canvas-lms_download{
+function canvas-lms_download(){
 echo "Downloading canvas-lms"
 
 }
 
-function install_bundler{
+function install_bundler(){
 echo "Now installing bundler gem"
 
 }
@@ -100,5 +129,4 @@ beginning
 
 command_line_tools
 
-install_brew
 
