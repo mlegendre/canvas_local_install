@@ -212,23 +212,13 @@ source ~/.bash_profile
 
 function canvas-lms_download(){
 echo "Downloading canvas-lms"
-#    cd canvas-lms
-#    rbenv local 1.9.3-p448
+
 name=$(git config --global instructure.name)
 user=$(git config --global instructure.user)
 gerrit_host=$(git config --global instructure.gerrithost)
 gerrit_port=$(git config --global instructure.gerritport)
-project=$1
-target_dir=$2
-
-if [ "$project" == "" ] || [ "$3" != "" ]; then
-  echo "Usage: $0 project_name [target_dir]"
-  exit -1
-fi
-
-if [ "$target_dir" == "" ]; then
-  target_dir=$project
-fi
+project=canvas-lms
+target_dir=~/Desktop/code/canvas-lms
 
 if [ "$name" == "" ] || [ "$user" == "" ]; then
   while true; do
@@ -251,17 +241,30 @@ if [ "$gerrit_host" == "" ] || [ "$gerrit_port" == "" ]; then
 fi
 
 git clone ssh://$user@$gerrit_host:$gerrit_port/$project $target_dir
+
+cd ~/Desktop/code/canvas-lms
+
+rbenv local 1.9.3-p448
 }
 
 function install_bundler(){
 echo "Now installing bundler gem"
-# cd ~/
-# gem install bundler
+cd ~/Desktop/code/canvas-lms
+gem install bundler
 }
 
 function download_cleanBranch_script(){
+CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
+
 echo "Downloading cleanbranch script"
 
+cd $CANVAS_ROOT_DIR
+
+wget https://raw.github.com/mlegendre/personalprojects/master/cleanBranch.sh --no-check-certificate
+
+echo "Spinning up your server now using cleanBranch.sh, make sure to run that script to checkout patchsets"
+
+source $CANVAS_ROOT_DIR/cleanBranch.sh
 }
 
 beginning
