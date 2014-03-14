@@ -26,6 +26,7 @@ function beginning(){
 function command_line_tools(){
   print_dash "Now Downloading wget and installing xtools, please follow all prompts (You will need to enter your password)"
   #TODO
+  # Check for xtools installed?
   # Need to refactor this, could probably stick the following into a method of its own
   # hdiutil attach <dmg>
   # sudo installer -verbose -pkg
@@ -73,22 +74,23 @@ function rbenv_install(){
   #    touch ~/.bash_profile
   #    print_dash "export GEM_HOME=~/gems" >> ~/.bash_profile
   #    source ~/.bash_profile
-  print_dash "I am now installing rbenv xmlsec1 and postgres"
-
-  brew install rbenv ruby-build xmlsec1
-
-  print_dash "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
 
   print_dash "Now modifying bash profile to set up rbenv"
 
   touch ~/.bash_profile
 
-  print_dash "Done"
-
   echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
   echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
 
   source ~/.bash_profile
+
+  print_dash "Done!"
+
+  print_dash "I am now installing rbenv xmlsec1 and postgres"
+
+  brew install rbenv ruby-build xmlsec1
+
+  print_dash "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
 
   rbenv install 1.9.3-p448
 
@@ -223,7 +225,12 @@ function setup_config_files(){
 # Need to modify the database.yml file
 # Need to modify the security.yml file
 # Need to modify the outgoingmail.yml file
-# Need to modify
+# Need to modify the envirnoments file
+mkdir config/environments/development-local.rb
+printf "config.cache_classes = true
+#config.action_controller.perform_caching = true
+#config.action_view.cache_template_loading = true" >> config/environments/development-local.rb
+
 echo do something
 }
 
