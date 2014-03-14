@@ -26,12 +26,12 @@
 #    case $yn in
 #        [Yy]* ) make install; break;;
 #        [Nn]* ) exit;;
-#        * ) echo "Please answer yes or no.";;
+#        * ) print_dash "Please answer yes or no.";;
 #    esac
 #done
 
 function beginning(){
-  echo "This script will be used to create a new local canvas-lms instance"
+  print_dash "This script will be used to create a new local canvas-lms instance"
   cd ~
   ROOT_DIR=$PWD
 
@@ -39,7 +39,7 @@ function beginning(){
 
 
 function command_line_tools(){
-  echo "Now Downloading wget and installing xtools, please follow all prompts (You will need to enter your password)"
+  print_dash "Now Downloading wget and installing xtools, please follow all prompts (You will need to enter your password)"
   #TODO
   # Need to refactor this, could probably stick the following into a method of its own
   # hdiutil attach <dmg>
@@ -78,44 +78,44 @@ function command_line_tools(){
 
 }
 
-function install_brew(){
-  # TODO
-  # Need lots of error checking
-  # If this error comes up Error: No such file or directory - /usr/local/Cellar
-  # Then run this command sudo mkdir /usr/local/Cellar
-  # If this error occurs /usr/local/etc isn't writable or Cannot write to /usr/local/Cellar
-  # Then do this sudo chown -R `whoami` /usr/local
-  echo "I am now going to install homebrew please follow the prompts"
-#bug here?????? whaaaaa?
-
-
-
-  brew doctor
-}
+#function install_brew(){
+#  # TODO
+#  # Need lots of error checking
+#  # If this error comes up Error: No such file or directory - /usr/local/Cellar
+#  # Then run this command sudo mkdir /usr/local/Cellar
+#  # If this error occurs /usr/local/etc isn't writable or Cannot write to /usr/local/Cellar
+#  # Then do this sudo chown -R `whoami` /usr/local
+#  print_dash "I am now going to install homebrew please follow the prompts"
+##bug here?????? whaaaaa?
+#
+#
+#
+#  brew doctor
+#}
 
 function rbenv_install(){
-  echo "I am now going to install rbenv"
+  print_dash "I am now going to install rbenv"
   #TODO
   # brew install rbenv ruby-build xmlsec1 postgresql
   # rbenv install 1.9.3-p448
 
   # Set environment variable GEM_HOME to ~/gems
   #    touch ~/.bash_profile
-  #    echo "export GEM_HOME=~/gems" >> ~/.bash_profile
+  #    print_dash "export GEM_HOME=~/gems" >> ~/.bash_profile
   #    source ~/.bash_profile
-  echo "I am now installing rbenv xmlsec1 and postgres"
+  print_dash "I am now installing rbenv xmlsec1 and postgres"
 
   brew install rbenv ruby-build xmlsec1 postgresql
 
-  echo "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
+  print_dash "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
 
   rbenv install 1.9.3-p448
 
-  echo "Now modifying bash profile to set up rbenv"
+  print_dash "Now modifying bash profile to set up rbenv"
 
   touch ~/.bash_profile
 
-  echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
+  print_dash 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
 
   source ~/.bash_profile
 }
@@ -123,22 +123,21 @@ function rbenv_install(){
 function github_install(){
   SSH_DIRECTORY="~/.ssh"
 
-  echo "Installing github on your machine"
+  print_dash "Installing github on your machine"
 
   brew install git
 
   if [ ! -d $SSH_DIRECTORY ];
     then
-      echo $'I see you do not have ssh keys on your system, wait while I generate those for you\n
-         Just press enter when it asks where you want the key to reside and passphrase (makes it easier to find later)'
+      echo $'I see you do not have ssh keys on your system, wait while I generate those for you\nJust press enter when it asks where you want the key to reside and passphrase (makes it easier to find later)'
 
       ssh-keygen
   fi
 
-  echo "Copying your public ssh key to your clipboard"
+  print_dash "Copying your public ssh key to your clipboard"
   pbcopy < ~/.ssh/id_rsa.pub
 
-  echo $'1. If you have not already signup for a new account\n2. Sign into github\n3. Go to Account Settings\n4. Click ssh keys in left sidebar\n5. Click Add SSH Keys\n6. Paste your key into the key field\n7. Click Add Key\n8. Confirm by entering github password'
+  print_dash $'1. If you have not already signup for a new account\n2. Sign into github\n3. Go to Account Settings\n4. Click ssh keys in left sidebar\n5. Click Add SSH Keys\n6. Paste your key into the key field\n7. Click Add Key\n8. Confirm by entering github password'
 
   open 'http://github.com'
 
@@ -148,12 +147,9 @@ function github_install(){
 
 function setting_up_gerrit_hooks(){
 
-  echo "If you haven't yet you need to set up a gerrit profile"
+  print_dash "If you haven't yet you need to set up a gerrit profile"
 
-  echo $'1. Go to https://gerrit.instructure.com\n2. Click "Sign In" in the upper-right corner\n
-       3. Sign in with your LDAP credentials. (Talk to IT if you don\'t have any yet.)\n
-       4. Add an SSH key on the registration page\n
-       5. Ask BrianP, Simon, PaulH or Cody for Developer rights'
+  print_dash $'1. Go to https://gerrit.instructure.com\n2. Click "Sign In" in the upper-right corner\n3. Sign in with your LDAP credentials. (Talk to IT if you don\'t have any yet.)\n4. Add an SSH key on the registration page\n5. Ask BrianP, Simon, PaulH or Cody for Developer rights'
 
   waiting_for_user
 
@@ -169,28 +165,28 @@ function setting_up_gerrit_hooks(){
 
 
   printf "[user]
-    name = $name
-    email = $name@instructure.com" >> ~/.gitconfig
+  name = $name
+  email = $name@instructure.com" >> ~/.gitconfig
 
-    scp -p gerrit:hooks/commit-msg .git/hooks/
+
 
 }
 
 function waiting_for_user(){
-  echo "Would you like more time?"
+  print_dash "Would you like more time?"
   read answer
 
   while [ $answer == "y" ];
   do
-   echo "I will give you some more time"
+   print_dash "I will give you some more time"
    sleep 3m
-   echo "do you still need more time?"
+   print_dash "do you still need more time?"
    read answer
   done
 }
 
 function postgresql_install(){
-  echo "I am now going to download the newest postgressql on your system"
+  print_dash "I am now going to download the newest postgressql on your system"
 
   brew install postgresql
 
@@ -202,14 +198,13 @@ function postgresql_install(){
 }
 
 function canvas-lms_download(){
-  echo "Downloading canvas-lms"
+  print_dash "Downloading canvas-lms"
 
   name=$(git config --global instructure.name)
   user=$(git config --global instructure.user)
   gerrit_host=$(git config --global instructure.gerrithost)
   gerrit_port=$(git config --global instructure.gerritport)
   project=canvas-lms
-  target_dir=~/Desktop/code
 
   if [ "$name" == "" ] || [ "$user" == "" ]; then
     while true; do
@@ -231,9 +226,13 @@ function canvas-lms_download(){
     git config --global instructure.gerritport $gerrit_port
   fi
 
-  git clone ssh://$user@$gerrit_host:$gerrit_port/$project $target_dir
+  cd ~/Desktop/code
+
+  git clone ssh://$user@$gerrit_host:$gerrit_port/$project
 
   cd ~/Desktop/code/canvas-lms
+
+  scp -p gerrit:hooks/commit-msg .git/hooks/
 
   rbenv local 1.9.3-p448
 
@@ -251,7 +250,7 @@ function canvas-lms_download(){
 }
 
 function install_bundler(){
-  echo "Now installing bundler gem"
+  print_dash "Now installing bundler gem"
   cd ~/Desktop/code/canvas-lms
   gem install bundler
 }
@@ -259,13 +258,15 @@ function install_bundler(){
 function download_cleanBranch_script(){
   CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
 
-  echo "Downloading cleanbranch script"
+  print_dash "Downloading cleanbranch script"
 
   cd $CANVAS_ROOT_DIR
 
   wget https://raw.github.com/mlegendre/personalprojects/master/cleanBranch.sh --no-check-certificate
 
-  echo "Spinning up your server now using cleanBranch.sh, make sure to run that script to checkout patchsets"
+  print_dash "Spinning up your server now using cleanBranch.sh, make sure to run that script to checkout patchsets"
+
+  chmod +x cleanBranch.sh
 
   source $CANVAS_ROOT_DIR/cleanBranch.sh
 }
@@ -301,9 +302,9 @@ postgresql_install
 
 rbenv_install
 
-install_bundler
-
 canvas-lms_download
+
+install_bundler
 
 download_cleanBranch_script
 
