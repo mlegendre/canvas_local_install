@@ -233,7 +233,7 @@ function install_bundler(){
   sudo gem install bundler 1.5.2
 
   bundle config build.thrift --with-cppflags='-D_FORTIFY_SOURCE=0'
-  bundle install
+  bundle install --without mysql
 }
 
 function download_cleanBranch_script(){
