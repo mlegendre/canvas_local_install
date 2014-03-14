@@ -1,4 +1,8 @@
 #!/bin/bash
+
+CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
+
+
 #This shell script will be used to automate a new environment 
 #
 #TODO list 
@@ -105,17 +109,19 @@ function rbenv_install(){
   #    source ~/.bash_profile
   print_dash "I am now installing rbenv xmlsec1 and postgres"
 
-  brew install rbenv ruby-build xmlsec1 postgresql
+  brew install rbenv ruby-build xmlsec1
 
   print_dash "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
 
   rbenv install 1.9.3-p448
 
+  rbenv rehash
+
   print_dash "Now modifying bash profile to set up rbenv"
 
   touch ~/.bash_profile
 
-  print_dash 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
+  echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
 
   source ~/.bash_profile
 }
@@ -205,6 +211,7 @@ function canvas-lms_download(){
   gerrit_host=$(git config --global instructure.gerrithost)
   gerrit_port=$(git config --global instructure.gerritport)
   project=canvas-lms
+  target_dir=~/Desktop/code/canvas-lms
 
   if [ "$name" == "" ] || [ "$user" == "" ]; then
     while true; do
@@ -226,38 +233,25 @@ function canvas-lms_download(){
     git config --global instructure.gerritport $gerrit_port
   fi
 
-  cd ~/Desktop/code
-
-  git clone ssh://$user@$gerrit_host:$gerrit_port/$project
+  git clone ssh://$user@$gerrit_host:$gerrit_port/$project $target_dir
 
   cd ~/Desktop/code/canvas-lms
-
-  scp -p gerrit:hooks/commit-msg .git/hooks/
-
-  rbenv local 1.9.3-p448
-
-  gem install bundler -v 1.5.2
-
-  bundle install --without mysql
-
-  brew install nodejs
-
-  npm install
 
   for config in delayed_jobs domain file_store outgoing_mail security; \
           do cp config/$config.yml.example config/$config.yml; done
 
+  scp -p gerrit:hooks/commit-msg .git/hooks/
+
+  rbenv local 1.9.3-p448
 }
 
 function install_bundler(){
   print_dash "Now installing bundler gem"
   cd ~/Desktop/code/canvas-lms
-  gem install bundler
+  sudo gem install bundler 1.5.2
 }
 
 function download_cleanBranch_script(){
-  CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
-
   print_dash "Downloading cleanbranch script"
 
   cd $CANVAS_ROOT_DIR
@@ -307,4 +301,3 @@ canvas-lms_download
 install_bundler
 
 download_cleanBranch_script
-
