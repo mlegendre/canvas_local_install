@@ -1,29 +1,10 @@
 #!/bin/bash
 
 CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
+#This shell script will be used to automate a new environment
 
-
-#This shell script will be used to automate a new environment 
-#
 #TODO list 
-#  1. Download command line tools 
-#    a. use the following command xcode-select --install
-#    b. Here is the source http://stackoverflow.com/questions/9329243/xcode-4-4-and-later-install-command-line-tools
-#  2. Download the following
-#    a. postgresql
-#      I. need to setup the correct environment variables
-#    b. rbenv
-#      I. need to setup the correct environment variables
-#  3. Download the canvas-lms project onto the Desktop or the home directory
-#  4. Gem install bundler
-#    a. Make sure that it is being installed in the canvas-lms project folder
-#  5. Run bundle install
-#  6. Run the following scripts
-#    a. RAILS_ENV=development bundle exec rake db:create
-#    b. RAILS_ENV=development bundle exec rake db:migrate
-#    c. RAILS_ENV=development bundle exec rake db:load_initial_data
-#  7. run the shell script I have created??
-#
+# Refactor ideas:
 # Add the following to make the code nicer
 #while true; do
 #    read -p "Do you wish to install this program?" yn
@@ -82,21 +63,6 @@ function command_line_tools(){
 
 }
 
-#function install_brew(){
-#  # TODO
-#  # Need lots of error checking
-#  # If this error comes up Error: No such file or directory - /usr/local/Cellar
-#  # Then run this command sudo mkdir /usr/local/Cellar
-#  # If this error occurs /usr/local/etc isn't writable or Cannot write to /usr/local/Cellar
-#  # Then do this sudo chown -R `whoami` /usr/local
-#  print_dash "I am now going to install homebrew please follow the prompts"
-##bug here?????? whaaaaa?
-#
-#
-#
-#  brew doctor
-#}
-
 function rbenv_install(){
   print_dash "I am now going to install rbenv"
   #TODO
@@ -113,17 +79,20 @@ function rbenv_install(){
 
   print_dash "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
 
-  rbenv install 1.9.3-p448
-
-  rbenv rehash
-
   print_dash "Now modifying bash profile to set up rbenv"
 
   touch ~/.bash_profile
 
+  print_dash "Done"
+
   echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
+  echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
 
   source ~/.bash_profile
+
+  rbenv install 1.9.3-p448
+
+  rbenv rehash
 }
 
 function github_install(){
@@ -155,7 +124,9 @@ function setting_up_gerrit_hooks(){
 
   print_dash "If you haven't yet you need to set up a gerrit profile"
 
-  print_dash $'1. Go to https://gerrit.instructure.com\n2. Click "Sign In" in the upper-right corner\n3. Sign in with your LDAP credentials. (Talk to IT if you don\'t have any yet.)\n4. Add an SSH key on the registration page\n5. Ask BrianP, Simon, PaulH or Cody for Developer rights'
+  print_dash $'*Your public key is still in your clipboard*\n1. Go to https://gerrit.instructure.com\n2. Click "Sign In" in the upper-right corner\n3. Sign in with your LDAP credentials. (Talk to IT if you don\'t have any yet.)\n4. Add an SSH key on the registration page\n5. Ask BrianP, Simon, PaulH or Cody for Developer rights'
+
+  open 'http://gerrit.instructure.com'
 
   waiting_for_user
 
@@ -243,12 +214,26 @@ function canvas-lms_download(){
   scp -p gerrit:hooks/commit-msg .git/hooks/
 
   rbenv local 1.9.3-p448
+
+  rebenv rehash
+}
+
+function setup_config_files(){
+#TODO
+# Need to modify the database.yml file
+# Need to modify the security.yml file
+# Need to modify the outgoingmail.yml file
+# Need to modify
+echo do something
 }
 
 function install_bundler(){
   print_dash "Now installing bundler gem"
   cd ~/Desktop/code/canvas-lms
   sudo gem install bundler 1.5.2
+
+  bundle config build.thrift --with-cppflags='-D_FORTIFY_SOURCE=0'
+  bundle install
 }
 
 function download_cleanBranch_script(){
