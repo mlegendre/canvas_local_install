@@ -48,17 +48,19 @@ function command_line_tools(){
   # rm <dmg>
 
   NAME_OF_TOOLS="commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
+  NAME_OF_WGET="wget-1.12-0.dmg"
+  WGET_URL="https://rudix.googlecode.com/files/wget-1.12-0.dmg"
   DROPBOX_URL="https://www.dropbox.com/s/gqfz32662ol6bpe/commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
   ESCAPED_TOOL_NAME="Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).dmg"
   #Install wget
 
-  curl -O https://rudix.googlecode.com/files/wget-1.12-0.dmg
+  curl -O $WGET_URL
 
-  hdiutil attach wget-1.12-0.dmg
+  hdiutil attach $NAME_OF_WGET
 
   sudo installer -verbose -pkg /Volumes/wget.pkg/wget.pkg -target /
-
-  hdiutil detach wget-1.12-0.dmg
+#bug here
+  hdiutil detach $NAME_OF_WGET
 
   rm wget-1.12-0.dmg
 
@@ -67,12 +69,12 @@ function command_line_tools(){
   wget -O  $NAME_OF_TOOLS $DROPBOX_URL
 
   hdiutil attach $NAME_OF_TOOLS
-
+#TODO figure out how to get rid of UI prompt
   sudo installer -verbose -pkg /Volumes/Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).pkg -target /
-
+#bug here
   hdiutil detach $NAME_OF_TOOLS
 
-  rm $ESCAPED_TOOL_NAME
+  rm $NAME_OF_TOOLS
 
 }
 
@@ -84,8 +86,9 @@ function install_brew(){
   # If this error occurs /usr/local/etc isn't writable or Cannot write to /usr/local/Cellar
   # Then do this sudo chown -R `whoami` /usr/local
   echo "I am now going to install homebrew please follow the prompts"
+#bug here?????? whaaaaa?
 
-  ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
+
 
   brew doctor
 }
@@ -122,9 +125,9 @@ function github_install(){
 
   echo "Installing github on your machine"
 
-  brew install github
+  brew install git
 
-  if [ !-d $SSH_DIRECTORY ];
+  if [ ! -d $SSH_DIRECTORY ];
     then
       echo $'I see you do not have ssh keys on your system, wait while I generate those for you\n
          Just press enter when it asks where you want the key to reside and passphrase (makes it easier to find later)'
@@ -206,7 +209,7 @@ function canvas-lms_download(){
   gerrit_host=$(git config --global instructure.gerrithost)
   gerrit_port=$(git config --global instructure.gerritport)
   project=canvas-lms
-  target_dir=~/Desktop/code/canvas-lms
+  target_dir=~/Desktop/code
 
   if [ "$name" == "" ] || [ "$user" == "" ]; then
     while true; do
@@ -267,17 +270,36 @@ function download_cleanBranch_script(){
   source $CANVAS_ROOT_DIR/cleanBranch.sh
 }
 
+function print_dash() {
+  for (( x=0; x < ${#1}; x++ )); do
+    printf "#"
+  done
+  echo ""
+  printf "$1"
+  echo ""
+     for (( x=0; x < ${#1}; x++ )); do
+     printf "#"
+  done
+  echo ""
+}
+
 beginning
 
 command_line_tools
 
-install_brew
+ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go/install)"
+
+brew doctor
+
+brew update
 
 github_install
 
 setting_up_gerrit_hooks
 
 postgresql_install
+
+rbenv_install
 
 install_bundler
 
