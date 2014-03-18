@@ -1,6 +1,9 @@
 #!/bin/bash
-
+ROOT_DIR=$PWD
 CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
+NAME=$(git config --global instructure.name)
+USER=$(git config --global instructure.user)
+
 #This shell script will be used to automate a new environment
 
 #TODO list 
@@ -18,8 +21,6 @@ CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
 function beginning(){
   print_dash "This script will be used to create a new local canvas-lms instance"
   cd ~
-  ROOT_DIR=$PWD
-
 }
 
 
@@ -65,34 +66,37 @@ function command_line_tools(){
 }
 
 function rbenv_install(){
+  cd $ROOT_DIR
   print_dash "I am now going to install rbenv"
-  #TODO
-  # brew install rbenv ruby-build xmlsec1 postgresql
-  # rbenv install 1.9.3-p448
-
-  # Set environment variable GEM_HOME to ~/gems
-  #    touch ~/.bash_profile
-  #    print_dash "export GEM_HOME=~/gems" >> ~/.bash_profile
-  #    source ~/.bash_profile
 
   print_dash "Now modifying bash profile to set up rbenv"
 
   touch ~/.bash_profile
 
-  echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
   echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
+  echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
 
-  source ~/.bash_profile
+  . ~/.bash_profile
+
+  echo $PATH
 
   print_dash "Done!"
 
-  print_dash "I am now installing rbenv xmlsec1 and postgres"
+  print_dash "I am now installing rbenv xmlsec1"
 
   brew install rbenv ruby-build xmlsec1
 
   print_dash "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
 
+  source ~/.bash_profile
+
+  rbenv rehash
+
   rbenv install 1.9.3-p448
+
+  rbenv global 1.9.3-p448
+
+  source ~/.bash_profile
 
   rbenv rehash
 }
@@ -113,12 +117,6 @@ function github_install(){
 
   print_dash "Copying your public ssh key to your clipboard"
   pbcopy < ~/.ssh/id_rsa.pub
-
-  print_dash $'1. If you have not already signup for a new account\n2. Sign into github\n3. Go to Account Settings\n4. Click ssh keys in left sidebar\n5. Click Add SSH Keys\n6. Paste your key into the key field\n7. Click Add Key\n8. Confirm by entering github password'
-
-  open 'http://github.com'
-
-  waiting_for_user
 }
 
 
@@ -126,28 +124,24 @@ function setting_up_gerrit_hooks(){
 
   print_dash "If you haven't yet you need to set up a gerrit profile"
 
-  print_dash $'*Your public key is still in your clipboard*\n1. Go to https://gerrit.instructure.com\n2. Click "Sign In" in the upper-right corner\n3. Sign in with your LDAP credentials. (Talk to IT if you don\'t have any yet.)\n4. Add an SSH key on the registration page\n5. Ask BrianP, Simon, PaulH or Cody for Developer rights'
+  print_dash $'*Your public key is already in your clipboard*\n1. Go to https://gerrit.instructure.com\n2. Click "Sign In" in the upper-right corner\n3. Sign in with your LDAP credentials. (Talk to IT if you don\'t have any yet.)\n4. Add an SSH key on the registration page\n5. Ask BrianP, Simon, PaulH or Cody for Developer rights'
 
   open 'http://gerrit.instructure.com'
 
   waiting_for_user
 
-  echo $'Now we will set up your gerrit hooks\nWhat is your gerrit login name?'
-  read name
+  read -p $'Now we will set up your gerrit hooks\nWhat is your gerrit login name?' USER
 
   touch ~/.ssh/config
 
   printf "Host gerrit
   HostName gerrit.instructure.com
-  User $name
+  User $USER
   Port 29418" >> ~/.ssh/config
-
 
   printf "[user]
   name = $name
   email = $name@instructure.com" >> ~/.gitconfig
-
-
 
 }
 
@@ -179,8 +173,7 @@ function postgresql_install(){
 function canvas-lms_download(){
   print_dash "Downloading canvas-lms"
 
-  name=$(git config --global instructure.name)
-  user=$(git config --global instructure.user)
+
   gerrit_host=$(git config --global instructure.gerrithost)
   gerrit_port=$(git config --global instructure.gerritport)
   project=canvas-lms
@@ -189,7 +182,7 @@ function canvas-lms_download(){
   if [ "$name" == "" ] || [ "$user" == "" ]; then
     while true; do
       read -p "please enter your name: " name
-      read -p "please enter your instructure ldap username: " user
+      read -p "please enter your instructure ldap username: " USER
       read -p "is \"$name ($user@instructure.com)\" right? [y/N] " yn
       case $yn in
         [Yy]* ) break;;
@@ -215,32 +208,59 @@ function canvas-lms_download(){
 
   scp -p gerrit:hooks/commit-msg .git/hooks/
 
+  . ~/.bash_profile
+
   rbenv local 1.9.3-p448
 
   rebenv rehash
 }
 
-function setup_config_files(){
-#TODO
-# Need to modify the database.yml file
-# Need to modify the security.yml file
-# Need to modify the outgoingmail.yml file
-# Need to modify the envirnoments file
-mkdir config/environments/development-local.rb
-printf "config.cache_classes = true
-#config.action_controller.perform_caching = true
-#config.action_view.cache_template_loading = true" >> config/environments/development-local.rb
 
-echo do something
+
+function setup_config_files(){
+  #TODO
+  string_to_replace="facdd3a131ddd8988b14f6e4e01039c93cfa0160"
+  random=$(openssl rand -base64 20)
+  # config_replacments=(  )
+
+  echo $random
+
+  # Need to modify the database.yml file
+  cp config/database.yml.example config/database.yml
+  sed -i.bak 's/ queue:/ #queue:/' config/database.yml
+  sed -i.bak 's/    adapter: postgresql/  # adapter: postgresql/' config/database.yml
+  sed -i.bak 's/    encoding: utf8/  # encoding: utf8/' config/database.yml
+  sed -i bak 's/    timeout: 5000/    # timeout: 5000/' config/database.yml
+  sed -i.bak 's/ database: canvas_queue_development/ # database: canvas_queue_development/' config/database.yml
+  rm config/database.yml.bak
+
+  # Need to modify the security.yml file
+  sed -i.bak 's/ facdd3a131ddd8988b14f6e4e01039c93cfa0160/ '$random'/' config/security.yml
+  # Need to modify the outgoingmail.yml file
+
+  #Modify the envirnoments file
+  touch config/environments/development-local.rb
+  printf "config.cache_classes = true
+config.action_controller.perform_caching = true
+config.action_view.cache_template_loading = true" >> config/environments/development-local.rb
 }
 
 function install_bundler(){
   print_dash "Now installing bundler gem"
+
+  echo $PWD
+
   cd ~/Desktop/code/canvas-lms
-  sudo gem install bundler 1.5.2
+
+  sudo gem install bundler --version "=1.5.1"
 
   bundle config build.thrift --with-cppflags='-D_FORTIFY_SOURCE=0'
   bundle install --without mysql
+}
+
+function load_initial_data(){
+  bundle exec rake db:create
+  bundle exec rake db:load_initial_data
 }
 
 function download_cleanBranch_script(){
@@ -251,6 +271,8 @@ function download_cleanBranch_script(){
   wget https://raw.github.com/mlegendre/personalprojects/master/cleanBranch.sh --no-check-certificate
 
   print_dash "Spinning up your server now using cleanBranch.sh, make sure to run that script to checkout patchsets"
+
+  echo $PWD
 
   chmod +x cleanBranch.sh
 
@@ -290,6 +312,11 @@ rbenv_install
 
 canvas-lms_download
 
+setup_config_files
+
 install_bundler
 
+load_initial_data
+
 download_cleanBranch_script
+
