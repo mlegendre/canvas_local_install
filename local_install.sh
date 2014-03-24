@@ -1,8 +1,7 @@
 #!/bin/bash
 ROOT_DIR=$PWD
 CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
-NAME=$(git config --global instructure.name)
-USER=$(git config --global instructure.user)
+
 
 #This shell script will be used to automate a new environment
 
@@ -41,13 +40,13 @@ function command_line_tools(){
   ESCAPED_TOOL_NAME="Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).dmg"
   #Install wget
 
-  curl -O $WGET_URL
+  curl -O -k $WGET_URL
 
   hdiutil attach $NAME_OF_WGET
 
   sudo installer -verbose -pkg /Volumes/wget.pkg/wget.pkg -target /
 #bug here
-  hdiutil detach $NAME_OF_WGET
+  hdiutil detach /Volumes/wget.pkg
 
   rm wget-1.12-0.dmg
 
@@ -75,12 +74,6 @@ function rbenv_install(){
 
   echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
   echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
-
-  . ~/.bash_profile
-
-  echo $PATH
-
-  print_dash "Done!"
 
   print_dash "I am now installing rbenv xmlsec1"
 
@@ -172,8 +165,8 @@ function postgresql_install(){
 
 function canvas-lms_download(){
   print_dash "Downloading canvas-lms"
-
-
+  name=$(git config --global instructure.name)
+  user=$(git config --global instructure.user)
   gerrit_host=$(git config --global instructure.gerrithost)
   gerrit_port=$(git config --global instructure.gerritport)
   project=canvas-lms
@@ -309,6 +302,8 @@ setting_up_gerrit_hooks
 postgresql_install
 
 rbenv_install
+
+source ~/.bash_profile
 
 canvas-lms_download
 
