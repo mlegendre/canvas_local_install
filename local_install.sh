@@ -45,7 +45,7 @@ function command_line_tools(){
   hdiutil attach $NAME_OF_WGET
 
   sudo installer -verbose -pkg /Volumes/wget.pkg/wget.pkg -target /
-#bug here
+
   hdiutil detach /Volumes/wget.pkg
 
   rm wget-1.12-0.dmg
@@ -100,7 +100,7 @@ function github_install(){
   print_dash "Installing github on your machine"
 
   brew install git
-
+#bug
   if [ ! -d $SSH_DIRECTORY ];
     then
       echo $'I see you do not have ssh keys on your system, wait while I generate those for you\nJust press enter when it asks where you want the key to reside and passphrase (makes it easier to find later)'
@@ -175,7 +175,7 @@ function canvas-lms_download(){
   if [ "$name" == "" ] || [ "$user" == "" ]; then
     while true; do
       read -p "please enter your name: " name
-      read -p "please enter your instructure ldap username: " USER
+      read -p "please enter your instructure ldap username: " user
       read -p "is \"$name ($user@instructure.com)\" right? [y/N] " yn
       case $yn in
         [Yy]* ) break;;
@@ -241,11 +241,11 @@ config.action_view.cache_template_loading = true" >> config/environments/develop
 function install_bundler(){
   print_dash "Now installing bundler gem"
 
-  echo $PWD
-
   cd ~/Desktop/code/canvas-lms
 
-  sudo gem install bundler --version "=1.5.1"
+  rbenv rehash
+
+  gem install bundler --version "=1.5.1"
 
   bundle config build.thrift --with-cppflags='-D_FORTIFY_SOURCE=0'
   bundle install --without mysql
@@ -265,7 +265,7 @@ function download_cleanBranch_script(){
 
   print_dash "Spinning up your server now using cleanBranch.sh, make sure to run that script to checkout patchsets"
 
-  echo $PWD
+  sed -i.bak 's/marc/'$USER'/' cleanBranch.sh
 
   chmod +x cleanBranch.sh
 
