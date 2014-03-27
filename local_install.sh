@@ -2,7 +2,6 @@
 ROOT_DIR=$PWD
 CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
 
-
 #This shell script will be used to automate a new environment
 
 #TODO list 
@@ -21,7 +20,6 @@ function beginning(){
   print_dash "This script will be used to create a new local canvas-lms instance"
   cd ~
 }
-
 
 function command_line_tools(){
   print_dash "Now Downloading wget and installing xtools, please follow all prompts (You will need to enter your password)"
@@ -81,17 +79,9 @@ function rbenv_install(){
 
   print_dash "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
 
-  source ~/.bash_profile
-
-  rbenv rehash
-
   rbenv install 1.9.3-p448
 
   rbenv global 1.9.3-p448
-
-  source ~/.bash_profile
-
-  rbenv rehash
 }
 
 function github_install(){
@@ -209,29 +199,31 @@ function canvas-lms_download(){
 }
 
 
-
+# This function will modify the database/secuity/environments YAML files
 function setup_config_files(){
-  #TODO
+  #TODO Need the outgoing mail yml configured
   string_to_replace="facdd3a131ddd8988b14f6e4e01039c93cfa0160"
   random=$(openssl rand -base64 20)
   # config_replacments=(  )
 
-  echo $random
-
-  # Need to modify the database.yml file
+  #This modifies the database yml file
   cp config/database.yml.example config/database.yml
   sed -i.bak 's/ queue:/ #queue:/' config/database.yml
   sed -i.bak 's/    adapter: postgresql/  # adapter: postgresql/' config/database.yml
   sed -i.bak 's/    encoding: utf8/  # encoding: utf8/' config/database.yml
   sed -i bak 's/    timeout: 5000/    # timeout: 5000/' config/database.yml
   sed -i.bak 's/ database: canvas_queue_development/ # database: canvas_queue_development/' config/database.yml
+  sed -i.bak 's/  database: canvas_queue_production/  #database: canvas_queue_production/' config/database.yml
+  sed -i.bak 's/  host: localhost/  #host: localhost/' config/database.yml
+  sed -i.bak 's/  username: canvas/  #username: canvas/' config/database.yml
+  sed -i.bak 's/  password: your_password/  #password: your_password/' config/database.yml
   rm config/database.yml.bak
 
-  # Need to modify the security.yml file
+  # This modifies the security.yml file
   sed -i.bak 's/ facdd3a131ddd8988b14f6e4e01039c93cfa0160/ '$random'/' config/security.yml
   # Need to modify the outgoingmail.yml file
 
-  #Modify the envirnoments file
+  #This modifies the envirnoments file
   touch config/environments/development-local.rb
   printf "config.cache_classes = true
 config.action_controller.perform_caching = true
@@ -243,15 +235,14 @@ function install_bundler(){
 
   cd ~/Desktop/code/canvas-lms
 
-  rbenv rehash
-
   gem install bundler --version "=1.5.1"
-
-  bundle config build.thrift --with-cppflags='-D_FORTIFY_SOURCE=0'
-  bundle install --without mysql
 }
 
 function load_initial_data(){
+
+  bundle config build.thrift --with-cppflags='-D_FORTIFY_SOURCE=0'
+  bundle install --without mysql
+
   bundle exec rake db:create
   bundle exec rake db:load_initial_data
 }
@@ -305,11 +296,15 @@ rbenv_install
 
 source ~/.bash_profile
 
+rbenv rehash
+
 canvas-lms_download
 
 setup_config_files
 
 install_bundler
+
+rbenv rehash
 
 load_initial_data
 
