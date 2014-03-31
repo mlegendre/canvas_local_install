@@ -7,4 +7,11 @@ chmod +x local_install.sh
 To make sure that the script runs in the current shell that you are in make sure to do the following command
 
 . local_install.sh
- 
+
+Known issues
+
+If you have .ssh keys already the check for it does not work
+This script does not check to see if you have some of the components installed already
+Still needs lots of refactoring
+
+Hey this is still a work in progress. Feel free to tell me about any bugs you find.  
