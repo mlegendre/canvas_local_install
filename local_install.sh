@@ -5,7 +5,12 @@ CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
 #This shell script will be used to automate a new environment
 
 #TODO list 
+# Work on general refactoring
+#
+# Make the .ssh directory check work, it should work but its not :(
+#
 # Refactor ideas:
+#
 # Add the following to make the code nicer
 #while true; do
 #    read -p "Do you wish to install this program?" yn
@@ -22,7 +27,12 @@ function beginning(){
 }
 
 function command_line_tools(){
-  print_dash "Now Downloading wget and installing xtools, please follow all prompts (You will need to enter your password)"
+  NAME_OF_TOOLS="commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
+  NAME_OF_WGET="wget-1.12-0.dmg"
+  WGET_URL="https://rudix.googlecode.com/files/wget-1.12-0.dmg"
+  DROPBOX_URL="https://www.dropbox.com/s/gqfz32662ol6bpe/commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
+  ESCAPED_TOOL_NAME="Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).dmg"
+
   #TODO
   # Check for xtools installed?
   # Need to refactor this, could probably stick the following into a method of its own
@@ -31,11 +41,8 @@ function command_line_tools(){
   # hdiutil detach <dmg>
   # rm <dmg>
 
-  NAME_OF_TOOLS="commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
-  NAME_OF_WGET="wget-1.12-0.dmg"
-  WGET_URL="https://rudix.googlecode.com/files/wget-1.12-0.dmg"
-  DROPBOX_URL="https://www.dropbox.com/s/gqfz32662ol6bpe/commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
-  ESCAPED_TOOL_NAME="Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).dmg"
+  print_dash "Now Downloading wget and installing xtools, please follow all prompts (You will need to enter your password)"
+
   #Install wget
 
   curl -O -k $WGET_URL
@@ -73,9 +80,9 @@ function rbenv_install(){
   echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
   echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.bash_profile
 
-  print_dash "I am now installing rbenv xmlsec1"
+  print_dash "I am now installing rbenv xmlsec1 and nodejs"
 
-  brew install rbenv ruby-build xmlsec1
+  brew install rbenv ruby-build xmlsec1 nodejs
 
   print_dash "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
 
@@ -190,12 +197,6 @@ function canvas-lms_download(){
           do cp config/$config.yml.example config/$config.yml; done
 
   scp -p gerrit:hooks/commit-msg .git/hooks/
-
-  . ~/.bash_profile
-
-  rbenv local 1.9.3-p448
-
-  rebenv rehash
 }
 
 
@@ -244,6 +245,7 @@ function load_initial_data(){
   bundle install --without mysql
 
   bundle exec rake db:create
+  bundle exec rake db:migrate
   bundle exec rake db:load_initial_data
 }
 
@@ -256,6 +258,8 @@ function download_cleanBranch_script(){
 
   print_dash "Spinning up your server now using cleanBranch.sh, make sure to run that script to checkout patchsets"
 
+  npm install
+
   sed -i.bak 's/marc/'$USER'/' cleanBranch.sh
 
   chmod +x cleanBranch.sh
@@ -263,6 +267,20 @@ function download_cleanBranch_script(){
   source $CANVAS_ROOT_DIR/cleanBranch.sh
 }
 
+# This function just checks to make sure the functions work
+function error_check(){
+
+  some_function=$1
+
+  is_error=$(echo $?)
+
+  if [ $is_error != 0 ];then
+    echo "There was an error '$is_error'"
+    exit 0
+  fi
+}
+
+# This function just takes a string and adds a bunch of #'s to the bottom and top of the string
 function print_dash() {
   for (( x=0; x < ${#1}; x++ )); do
     printf "#"
