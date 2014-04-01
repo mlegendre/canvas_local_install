@@ -5,6 +5,9 @@ CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
 #This shell script will be used to automate a new environment
 
 #TODO list 
+#
+# Need to check for RVM and either use it or remove it.
+#
 # Work on general refactoring
 #
 # Make the .ssh directory check work, it should work but its not :(
@@ -24,6 +27,7 @@ CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
 function beginning(){
   print_dash "This script will be used to create a new local canvas-lms instance"
   cd ~
+
 }
 
 function command_line_tools(){
@@ -31,7 +35,7 @@ function command_line_tools(){
   NAME_OF_WGET="wget-1.12-0.dmg"
   WGET_URL="https://rudix.googlecode.com/files/wget-1.12-0.dmg"
   DROPBOX_URL="https://www.dropbox.com/s/gqfz32662ol6bpe/commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
-  ESCAPED_TOOL_NAME="Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).dmg"
+  ESCAPED_TOOL_NAME="/Volumes/Command\ Line\ Developer\ Tools/"
 
   #TODO
   # Check for xtools installed?
@@ -62,11 +66,10 @@ function command_line_tools(){
   hdiutil attach $NAME_OF_TOOLS
 #TODO figure out how to get rid of UI prompt
   sudo installer -verbose -pkg /Volumes/Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).pkg -target /
-#bug here
-  hdiutil detach $NAME_OF_TOOLS
+
+  hdiutil detach $ESCAPED_TOOL_NAME
 
   rm $NAME_OF_TOOLS
-
 }
 
 function rbenv_install(){
@@ -82,7 +85,7 @@ function rbenv_install(){
 
   print_dash "I am now installing rbenv xmlsec1 and nodejs"
 
-  brew install rbenv ruby-build xmlsec1 nodejs
+  brew install rbenv ruby-build xmlsec1 node
 
   print_dash "I will now set up your system for rbenv with ruby 1.9.3 but you can always change this later"
 
@@ -92,15 +95,15 @@ function rbenv_install(){
 }
 
 function github_install(){
-  SSH_DIRECTORY="~/.ssh"
+  SSH_DIRECTORY="$ROOT_DIR/.ssh"
 
   print_dash "Installing github on your machine"
 
   brew install git
-#bug
-  if [ ! -d $SSH_DIRECTORY ];
+
+  if [ ! -d "$SSH_DIRECTORY" ];
     then
-      echo $'I see you do not have ssh keys on your system, wait while I generate those for you\nJust press enter when it asks where you want the key to reside and passphrase (makes it easier to find later)'
+      print_dash $'I see you do not have ssh keys on your system, wait while I generate those for you\nJust press enter when it asks where you want the key to reside and passphrase (makes it easier to find later)'
 
       ssh-keygen
   fi
@@ -261,6 +264,8 @@ function download_cleanBranch_script(){
   npm install
 
   sed -i.bak 's/marc/'$USER'/' cleanBranch.sh
+
+  rm cleanBranch.sh.bak
 
   chmod +x cleanBranch.sh
 
