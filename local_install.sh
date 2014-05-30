@@ -66,7 +66,7 @@ function command_line_tools(){
 
   #Use wget to grab commandline tools
 
-  wget -O  $NAME_OF_TOOLS $DROPBOX_URL
+  wget -O  $NAME_OF_TOOLS $DROPBOX_URL --no-check-certificate
 
 if [[ "$?" == 1 ]];
    then
