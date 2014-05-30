@@ -28,6 +28,11 @@ function beginning(){
   print_dash "This script will be used to create a new local canvas-lms instance"
   cd ~
 
+if [[ "$?" == 1 ]];
+  then
+     print_dash_error "The curl command did not work. Please check the URL and try again."
+  fi
+
 }
 
 function command_line_tools(){
@@ -62,6 +67,11 @@ function command_line_tools(){
   #Use wget to grab commandline tools
 
   wget -O  $NAME_OF_TOOLS $DROPBOX_URL
+
+if [[ "$?" == 1 ]];
+   then
+     print_dash_error "The wget command did not work. Please check the URL and try again."
+  fi
 
   hdiutil attach $NAME_OF_TOOLS
 #TODO figure out how to get rid of UI prompt
@@ -248,7 +258,21 @@ function load_initial_data(){
   bundle install --without mysql
 
   bundle exec rake db:create
+
+  if [[ ! "$?" == 0 ]];
+  then
+    launchctl unload ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
+    launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
+  fi
+
   bundle exec rake db:migrate
+
+  if [[ ! "$?" == 0 ]];
+  then
+    print_dash_error "Something happeend while creating the database. Is your server running?"
+    exit
+  fi
+
   bundle exec rake db:load_initial_data
 }
 
@@ -258,6 +282,11 @@ function download_cleanBranch_script(){
   cd $CANVAS_ROOT_DIR
 
   wget https://raw.github.com/mlegendre/personalprojects/master/cleanBranch.sh --no-check-certificate
+
+  if [[ ! "$?" == 0 ]];
+   then
+    print_dash_error "Something happened downloading my cleanBranch script. Did I move it? You will never know."
+  fi
 
   print_dash "Spinning up your server now using cleanBranch.sh, make sure to run that script to checkout patchsets"
 
@@ -273,17 +302,7 @@ function download_cleanBranch_script(){
 }
 
 # This function just checks to make sure the functions work
-function error_check(){
 
-  some_function=$1
-
-  is_error=$(echo $?)
-
-  if [ $is_error != 0 ];then
-    echo "There was an error '$is_error'"
-    exit 0
-  fi
-}
 
 # This function just takes a string and adds a bunch of #'s to the bottom and top of the string
 function print_dash() {
@@ -291,10 +310,36 @@ function print_dash() {
     printf "#"
   done
   echo ""
-  printf "$1"
+  printf '\e[38;5;46m%-6s\e[m' "$1"
   echo ""
-     for (( x=0; x < ${#1}; x++ )); do
-     printf "#"
+  for (( x=0; x < ${#1}; x++ )); do
+    printf "#"
+  done
+  echo ""
+}
+
+function print_dash_error() {
+  for (( x=0; x < ${#1}; x++ )); do
+    printf "#"
+  done
+  echo ""
+  printf '\e[38;5;124m%-6s\e[m' "$1"
+  echo ""
+  for (( x=0; x < ${#1}; x++ )); do
+    printf "#"
+  done
+  echo ""
+}
+
+function print_dash_warning() {
+  for (( x=0; x < ${#1}; x++ )); do
+    printf "#"
+  done
+  echo ""
+  printf '\e[38;5;226m%-6s\e[m' "$1"
+  echo ""
+  for (( x=0; x < ${#1}; x++ )); do
+    printf "#"
   done
   echo ""
 }
