@@ -10,7 +10,7 @@ To make sure that the script runs in the current shell that you are in make sure
 
 Known issues
 
-If you have .ssh keys already the check for it does not work
+This script only works on Mac OSX (I am working on multiple OS option)
 This script does not check to see if you have some of the components installed already
 Still needs lots of refactoring
 
