@@ -1,6 +1,7 @@
 #!/bin/bash
 ROOT_DIR=$PWD
 CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
+OS_ENV=("Darwin" "Ubuntu")
 
 #This shell script will be used to automate a new environment
 
@@ -27,15 +28,27 @@ CANVAS_ROOT_DIR=~/Desktop/code/canvas-lms
 function beginning(){
   print_dash "This script will be used to create a new local canvas-lms instance"
   cd ~
+  
+}
 
-if [[ "$?" == 1 ]];
-  then
-     print_dash_error "The curl command did not work. Please check the URL and try again."
-  fi
+#Future feature that will allow you to install canvas on any OS
+function os_check(){
+platform='uknown'
+unamestr=`uname`
+if [[ "$unamestr" == 'Darwin' ]]; then
+   platform='linux'
+elif [[ "$unamestr" == 'Linux' ]]; then
+   platform='freebsd'
+fi
+
+#Need to figure out how to get this installed on Windows still (Don't laugh im being serious, it would open us up for school using windows OS)
 
 }
 
+
 function command_line_tools(){
+  XTOOLS_CHECK=`xcode-select -p`
+  XTOOLS_FOLDER='/Applications/Xcode.app/Contents/Developer'
   NAME_OF_TOOLS="commandline_tools_os_x_mavericks_for_xcode__march_2014.dmg"
   NAME_OF_WGET="wget-1.12-0.dmg"
   WGET_URL="https://rudix.googlecode.com/files/wget-1.12-0.dmg"
@@ -44,45 +57,61 @@ function command_line_tools(){
 
   #TODO
   # Check for xtools installed?
-  # Need to refactor this, could probably stick the following into a method of its own
+  # xcode-select -p
+  # Should see this /Applications/Xcode.app/Contents/Developer
+  # Need to DRY the hdiutil commands up, could probably stick the following into a method of its own
   # hdiutil attach <dmg>
   # sudo installer -verbose -pkg
   # hdiutil detach <dmg>
   # rm <dmg>
 
-  print_dash "Now Downloading wget and installing xtools, please follow all prompts (You will need to enter your password)"
+  if [[ $XTOOLS_CHECK == $XTOOLS_FOLDER ]];
+    then
+     print_dash "You already have xtools installed and I am going to skip this part of the installation"
+  else
 
-  #Install wget
+    print_dash "Now Downloading wget and installing xtools, please follow all prompts (You will need to enter your password)"
 
-  curl -O -k $WGET_URL
+    #Install wget
 
-  hdiutil attach $NAME_OF_WGET
+    curl -O -k $WGET_URL
 
-  sudo installer -verbose -pkg /Volumes/wget.pkg/wget.pkg -target /
+    if [[ "$?" == 1 ]];
+     then
+      print_dash_error "The curl command did not work. Please check the URL and try again."
+    fi
 
-  hdiutil detach /Volumes/wget.pkg
+    hdiutil attach $NAME_OF_WGET
 
-  rm wget-1.12-0.dmg
+    sudo installer -verbose -pkg /Volumes/wget.pkg/wget.pkg -target /
 
-  #Use wget to grab commandline tools
+    hdiutil detach /Volumes/wget.pkg
 
-  wget -O  $NAME_OF_TOOLS $DROPBOX_URL --no-check-certificate
+    rm wget-1.12-0.dmg
 
-if [[ "$?" == 1 ]];
-   then
-     print_dash_error "The wget command did not work. Please check the URL and try again."
-  fi
+    #Use wget to grab commandline tools
 
-  hdiutil attach $NAME_OF_TOOLS
-#TODO figure out how to get rid of UI prompt
-  sudo installer -verbose -pkg /Volumes/Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).pkg -target /
+    wget -O  $NAME_OF_TOOLS $DROPBOX_URL --no-check-certificate
 
-  hdiutil detach $ESCAPED_TOOL_NAME
+    if [[ "$?" == 1 ]];
+     then
+      print_dash_error "The wget command did not work. Please check the URL and try again."
+    fi
 
-  rm $NAME_OF_TOOLS
+    hdiutil attach $NAME_OF_TOOLS
+    #TODO figure out how to get rid of UI prompt
+    sudo installer -verbose -pkg /Volumes/Command\ Line\ Developer\ Tools/Command\ Line\ Tools\ \(OS\ X\ 10.9\).pkg -target /
+
+    hdiutil detach $ESCAPED_TOOL_NAME
+
+    rm $NAME_OF_TOOLS
+ fi
 }
 
 function rbenv_install(){
+  ruby_version_manager=''
+
+  #sudo apt-get install curl
   cd $ROOT_DIR
   print_dash "I am now going to install rbenv"
 
@@ -142,10 +171,29 @@ function setting_up_gerrit_hooks(){
   User $USER
   Port 29418" >> ~/.ssh/config
 
-  printf "[user]
-  name = $name
-  email = $name@instructure.com" >> ~/.gitconfig
+  printf "[color]
+  ui = true
 
+  [user]
+  name = $name
+  email = $name@instructure.com
+
+  [alias]
+	gerrit-submit = "!bash -c ' \
+		    local_ref=$(git symbolic-ref HEAD); \
+		    local_name=${local_ref##refs/heads/}; \
+		    remote=$(git config branch.\"$local_name\".remote || echo origin); \
+		    remote_ref=$(git config branch.\"$local_name\".merge); \
+		    remote_name=${remote_ref##refs/heads/}; \
+		    remote_review_ref=\"refs/for/$remote_name\"; \
+		    r=\"\"; \
+		    if [[ $0 != \"\" && $0 != \"bash\" ]]; then r=\"--reviewer=$0\"; fi; \
+		    if [[ $1 != \"\" ]]; then r=\"$r --reviewer=$1\"; fi; \
+		    if [[ $2 != \"\" ]]; then r=\"$r --reviewer=$2\"; fi; \
+		    if [[ $3 != \"\" ]]; then r=\"$r --reviewer=$3\"; fi; \
+		    if [[ $4 != \"\" ]]; then r=\"$r --reviewer=$4\"; fi; \
+		    git push --receive-pack=\"gerrit receive-pack $r\" $remote HEAD:$remote_review_ref'"
+	st = status" >> ~/.gitconfig
 }
 
 function waiting_for_user(){
@@ -348,11 +396,15 @@ beginning
 
 command_line_tools
 
-ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go/install)"
-
-brew doctor
-
-brew update
+which -s brew
+if [[ $? != 0 ]] ; then
+  print_dash "You do not have homebrew installed please wait while I get that set up"
+  ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go/install)"
+  brew doctor
+  brew update
+else
+  echo "You have homebrew installed already"
+fi
 
 github_install
 
