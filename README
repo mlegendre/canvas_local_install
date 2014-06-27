@@ -1,6 +1,10 @@
 This script will help to install and begin running your very own canvas-lms instance
 
-To run the script make sure that you give it the correct execution rights
+To Download the script do the following curl command
+
+curl https://raw.githubusercontent.com/mlegendre/canvas_local_install/master/local_install.sh > local_install.sh
+
+Before you run the script make sure that you give it the correct execution rights
 
 chmod +x local_install.sh 
 
