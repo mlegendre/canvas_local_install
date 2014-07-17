@@ -162,38 +162,26 @@ function setting_up_gerrit_hooks(){
 
   waiting_for_user
 
-  read -p $'Now we will set up your gerrit hooks\nWhat is your gerrit login name?' USER
+  read -p $'Now we will set up your gerrit hooks\nWhat is your gerrit login name? ' USER
 
-  touch ~/.ssh/config
+  if [[ -e ~/.ssh/config ]] && [[ -e ~/.gitconfig ]];
+   then
+      print_dash_warning "Seems you have already set up your .ssh config file. You might want to revisit that and make sure it is set up properly"
+  else
+    touch ~/.ssh/config
 
-  printf "Host gerrit
-  HostName gerrit.instructure.com
-  User $USER
-  Port 29418" >> ~/.ssh/config
+    printf "Host gerrit
+    HostName gerrit.instructure.com
+    User $USER
+    Port 29418" >> ~/.ssh/config
 
-  printf "[color]
-  ui = true
+    printf "[color]
+    ui = true
 
-  [user]
-  name = $name
-  email = $name@instructure.com
-
-  [alias]
-	gerrit-submit = "!bash -c ' \
-		    local_ref=$(git symbolic-ref HEAD); \
-		    local_name=${local_ref##refs/heads/}; \
-		    remote=$(git config branch.\"$local_name\".remote || echo origin); \
-		    remote_ref=$(git config branch.\"$local_name\".merge); \
-		    remote_name=${remote_ref##refs/heads/}; \
-		    remote_review_ref=\"refs/for/$remote_name\"; \
-		    r=\"\"; \
-		    if [[ $0 != \"\" && $0 != \"bash\" ]]; then r=\"--reviewer=$0\"; fi; \
-		    if [[ $1 != \"\" ]]; then r=\"$r --reviewer=$1\"; fi; \
-		    if [[ $2 != \"\" ]]; then r=\"$r --reviewer=$2\"; fi; \
-		    if [[ $3 != \"\" ]]; then r=\"$r --reviewer=$3\"; fi; \
-		    if [[ $4 != \"\" ]]; then r=\"$r --reviewer=$4\"; fi; \
-		    git push --receive-pack=\"gerrit receive-pack $r\" $remote HEAD:$remote_review_ref'"
-	st = status" >> ~/.gitconfig
+    [user]
+    name = $USER
+    email = $USER@instructure.com" >> ~/.gitconfig
+  fi
 }
 
 function waiting_for_user(){
