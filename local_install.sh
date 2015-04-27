@@ -140,15 +140,20 @@ function github_install(){
 
   brew install git
 
-  if [ ! -d "$SSH_DIRECTORY" ];
+  if ssh-add -L;
     then
-      print_dash $'I see you do not have ssh keys on your system, wait while I generate those for you\nJust press enter when it asks where you want the key to reside and passphrase (makes it easier to find later)'
+      print_dash "Copying the first public ssh key listed in your agent to your clipboard"
+      ssh-add -L | head -1 | pbcopy
+  else
+    if [ ! -d "$SSH_DIRECTORY" ];
+      then
+        print_dash $'I see you do not have ssh keys on your system, wait while I generate those for you\nJust press enter when it asks where you want the key to reside and passphrase (makes it easier to find later)'
 
-      ssh-keygen
+        ssh-keygen
+    fi
+    print_dash "Copying your public ssh key to your clipboard"
+    pbcopy < ~/.ssh/id_rsa.pub
   fi
-
-  print_dash "Copying your public ssh key to your clipboard"
-  pbcopy < ~/.ssh/id_rsa.pub
 }
 
 
