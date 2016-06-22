@@ -310,7 +310,7 @@ function load_initial_data(){
 
   if [[ ! "$?" == 0 ]];
   then
-    print_dash_error "Something happeend while creating the database. Is your server running?"
+    print_dash_error "Something happend while creating the database. Is your server running?"
     exit
   fi
 
